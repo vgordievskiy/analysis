@@ -1,0 +1,5 @@
+name: analysis
+dependencies:
+  analyzer: any
+dev_dependencies:
+  test: any
