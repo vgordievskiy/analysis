@@ -11,7 +11,8 @@ class SourceResolver implements Function {
   static const _filePrefix = 'file:/';
   static const _packagePrefix = 'package:';
 
-  final List<String> _packageRoots;
+  // TODO: Make private.
+  final PackageUriResolver packageUriResolver;
 
   /// Create a new default source resolver.
   factory SourceResolver() {
@@ -19,25 +20,23 @@ class SourceResolver implements Function {
   }
 
   /// Create a source resolver using the supplied as package roots.
-  SourceResolver.fromPackageRoots(
+  factory SourceResolver.fromPackageRoots(
       Iterable<String> packageRoots, [
-      bool useDartSdk = true])
-          : _packageRoots = useDartSdk ?
-                ([]..addAll(packageRoots)..addAll(_defaultPackageRoots))
-                : packageRoots.toList(growable: false);
+      bool includeDefaultPackageRoot = true]) {
+    final concatPackageRoots = packageRoots.toList();
+    if (includeDefaultPackageRoot) {
+      concatPackageRoots.addAll(_defaultPackageRoots);
+    }
+    return new SourceResolver._(_createResolver(concatPackageRoots));
+  }
+
+  SourceResolver._(this.packageUriResolver);
 
   /// Resolve and returns [path]. For example:
   ///     // Returns (for example) /home/ubuntu/user/libs/analysis/analysis.dart
   ///     resolver('package:analysis/analysis.dart')
   String call(String path) {
-    // Create and register URI resolvers.
-    final packageRootResolvers = _packageRoots.map((packageRoot) {
-      return new JavaFile.fromUri(new Uri.file(packageRoot));
-    }).toList(growable: false);
-    final packageUriResolver = new PackageUriResolver(packageRootResolvers);
-
     // Translate path to an absolute path.
-    JavaFile file;
     if (path.startsWith(_packagePrefix)) {
       var uri = Uri.parse(path);
       path = packageUriResolver.resolveAbsolute(uri).toString();
@@ -45,11 +44,17 @@ class SourceResolver implements Function {
       if (filePathIndex != -1) {
         path = path.substring(filePathIndex + _filePrefix.length - 1);
       }
-      file = new JavaFile(path);
     } else {
-      file = new JavaFile(path);
+      throw new ArgumentError.value(path, 'path', 'Not in "package:" format.');
     }
+    return new JavaFile(path).getAbsolutePath();
+  }
 
-    return file.getAbsolutePath();
+  /// Creates and returns a URI resolver.
+  static PackageUriResolver _createResolver([Iterable<String> packageRoots]) {
+    final packageRootResolvers = packageRoots.map((packageRoot) {
+      return new JavaFile.fromUri(new Uri.file(packageRoot));
+    }).toList(growable: false);
+    return new PackageUriResolver(packageRootResolvers);
   }
 }

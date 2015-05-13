@@ -8,7 +8,16 @@ void main() {
     final sourceCrawler = new SourceCrawler();
 
     test('can run on test_data.dart', () async {
-      sourceCrawler('package:analysis/src/test_data/test_data.dart');
+      final librariesLoaded =
+          sourceCrawler('package:analysis/src/test_data/test_data.dart')
+            .map((LibraryTuple library) => library.packageUri)
+            .toList();
+
+      expect(librariesLoaded, [
+        'package:analysis/src/test_data/test_data.dart',
+        'dart:collection',
+        'package:analysis/src/test_data/test_import.dart'
+      ]);
     });
   });
 }
