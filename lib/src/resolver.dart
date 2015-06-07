@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:analyzer/src/generated/java_io.dart';
 import 'package:analyzer/src/generated/source_io.dart';
 import 'package:analyzer/src/generated/sdk.dart';
+import 'package:path/path.dart' as path;
 
 /// A source code file resolver.
 class SourceResolver {
@@ -64,7 +65,13 @@ class SourceResolver {
     }
     // Translate uri to an absolute path.
     final source = _packageUriResolver.resolveAbsolute(uri);
-    return source.toString();
+    var path = source.toString();
+
+    // TODO: Figure out why this happens, and fix it.
+    if (path.contains('file:')) {
+      path = path.split('file:').last;
+    }
+    return path;
   }
 
   /// Given an absolute file [path], returns the package [Uri].

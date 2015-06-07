@@ -24,7 +24,7 @@ void main() {
     test('can resolve all ASTs, including parts', () {
       final uri = Uri.parse('package:analysis/testing/library/a.dart');
       final lib = visitor.visit(uri: uri);
-      return expect(lib.astUnits(resolveParts: true), hasLength(2));
+      return expect(lib.astUnits(), hasLength(2));
     });
   });
 }

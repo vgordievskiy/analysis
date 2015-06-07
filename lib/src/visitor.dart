@@ -41,7 +41,9 @@ class SourceVisitor {
 
   SourceVisitor._(this._context, this._sourceResolver);
 
-  /// Returns a library context.
+  /// Returns a library context by visiting and analyzing.
+  ///
+  /// If [path] is specified it is used, otherwise, [uri] is used.
   Library visit({String path, Uri uri}) {
     if (uri != null) {
       path = _sourceResolver.find(uri);
@@ -54,6 +56,7 @@ class SourceVisitor {
     final astUnit = _context.getResolvedCompilationUnit(source, library);
     return new Library._(
         library.name,
+        path,
         astUnit,
         this,
         parts: _getDirectiveUris(
@@ -64,6 +67,9 @@ class SourceVisitor {
         exports: _getDirectiveUris(astUnit, (e) => e is ExportDirective));
   }
 
+  /// Returns the absolute file location of [uri].
+  ///
+  /// If [relativeTo] is specified, relative URIs are resolved using it.
   String _getFileLocation(Uri uri, [String relativeTo]) {
     if (uri == null || uri.scheme == 'dart') {
       return null;
@@ -78,6 +84,9 @@ class SourceVisitor {
     }
   }
 
+  /// Returns all directive URIs from [astUnit] that pass [test].
+  ///
+  /// If [relativeTo] is specified, it is passed to [_getFileLocation].
   List<String> _getDirectiveUris(
       CompilationUnit astUnit,
       bool test(Directive directive),
@@ -88,26 +97,41 @@ class SourceVisitor {
   }
 }
 
+/// A parsed library.
 class Library {
   final CompilationUnit _astUnit;
   final SourceVisitor _sourceVisitor;
 
+  /// URIs of exports.
   final List<String> exports;
+
+  /// URIs of imports.
   final List<String> imports;
+
+  /// The library name.
   final String name;
+
+  /// The absolute file path.
+  final String path;
+
+  /// URIs of parts.
   final List<String> parts;
 
   List<CompilationUnit> _resolvedAstUnits;
 
   Library._(
       this.name,
+      this.path,
       this._astUnit,
       this._sourceVisitor, {
       this.exports: const [],
       this.imports: const [],
       this.parts: const []});
 
-  List<CompilationUnit> astUnits({bool resolveParts: false}) {
+  /// Returns a list of all ASTs in the library.
+  ///
+  /// If [resolveParts] is false, the [parts] are not parsed and resolved.
+  List<CompilationUnit> astUnits({bool resolveParts: true}) {
     if (!resolveParts) {
       return [_astUnit];
     } else {
