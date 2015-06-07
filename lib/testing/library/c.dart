@@ -1,1 +1,1 @@
-library c_lib;
+library lib_c;

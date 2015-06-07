@@ -52,3 +52,17 @@ new SourceVisitor();
 var uri = Uri.parse('package:analysis/src/test_data/test_data.dart');
 sourceVisitor.visit(uri: uri)
 ```
+
+SourceCrawler
+---
+
+Similar to `SourceVisitor`; recursively searches into imports of the visited
+file, and returns an iterable of every library parsed.
+
+```dart
+// Example output: [
+//   Library(name: foo.bar),
+//   Library(name: foo.baz)
+// ]
+sourceCrawler.crawl('package:foo/foo.dart')
+```
