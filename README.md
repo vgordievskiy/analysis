@@ -1,6 +1,8 @@
 analysis
 ===
 
+[![Build Status](https://drone.io/github.com/matanlurey/analysis/status.png)](https://drone.io/github.com/matanlurey/analysis/latest)
+
 A set of utility classes to make common use cases of using the Dart `analyzer`
 package simpler and without needing intimate knowledge of the internals.
 
