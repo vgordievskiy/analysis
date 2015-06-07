@@ -21,33 +21,34 @@ new SourceResolver(['/generated-files'])
 
 ```dart
 // Example output: ~/git/analysis/packages/analysis/src/resolver.dart
-sourceResolver('package:analysis/src/resolver.dart');
+sourceResolver.find(Uri.parse('package:analysis/src/resolver.dart'));
 ```
 
-SourceCrawler
+### Finding the package location
+
+```dart
+// Example output: package:analysis/src/resolver.dart
+sourceResolver.resolve('~/git/analysis/packages/analysis/src/resolver.dart');
+```
+
+SourceVisitor
 ---
 
-### Creating a crawler.
+### Creating a visitor.
 
 ```dart
 // Create a default source crawler.
-new SourceCrawler();
-
-// Create a source crawler with custom options.
-new SourceCrawlerImpl(
-    analyzeFunctionBodies: false,
-    cacheSize: 256,
-    packageRoots: ['/generated-files'],
-    preserveComments: false);
+new SourceVisitor();
 ```
 
 ### Crawl a file for libraries.
 
 ```dart
 // Example output: [
-//   new LibraryTuple(..., 'package:analysis/src/test_data/test_data.dart'),
-//   new LibraryTuple(..., 'dart:collection'),
-//   new LibraryTuple(..., 'package:analysis/src/test_data/test_import.dart')
+//   new Library(..., 'package:analysis/src/test_data/test_data.dart'),
+//   new Library(..., 'dart:collection'),
+//   new Library(..., 'package:analysis/src/test_data/test_import.dart')
 // ]
-sourceCrawler('package:analysis/src/test_data/test_data.dart')
+var uri = Uri.parse('package:analysis/src/test_data/test_data.dart');
+sourceVisitor.visit(uri: uri)
 ```
