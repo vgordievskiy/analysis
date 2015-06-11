@@ -1,6 +1,8 @@
 library analysis.test.visitor_test;
 
+import 'package:analysis/src/utils.dart';
 import 'package:analysis/src/visitor.dart';
+import 'package:analyzer/analyzer.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -26,5 +28,27 @@ void main() {
       final lib = visitor.visit(uri: uri);
       return expect(lib.astUnits(), hasLength(2));
     });
+
+    test('types are resolved', () {
+      final uri = Uri.parse('package:analysis/testing/library/a.dart');
+      final lib = visitor.visit(uri: uri);
+      final clazzFinder = new _FindConstructorVisitor();
+      lib.astUnits().first.accept(clazzFinder);
+
+      expect(clazzFinder.constructorAstNode, isNotNull);
+      final constructor = clazzFinder.constructorAstNode;
+      final function = new FunctionDefinition.fromConstructor(constructor);
+
+      expect(function.positionalArguments.first.originLibraryName, 'lib_a');
+    });
   });
+}
+
+class _FindConstructorVisitor extends GeneralizingAstVisitor {
+  ConstructorDeclaration constructorAstNode;
+
+  @override
+  visitConstructorDeclaration(ConstructorDeclaration astNode) {
+    constructorAstNode = astNode;
+  }
 }
