@@ -5,18 +5,18 @@ import 'dart:io';
 import 'package:analyzer/src/generated/java_io.dart';
 import 'package:analyzer/src/generated/source_io.dart';
 import 'package:analyzer/src/generated/sdk.dart';
-import 'package:path/path.dart' as path;
 
 /// A source code file resolver.
 class SourceResolver {
   static final _defaultPackageRoots = [Platform.packageRoot];
 
+  final _uriFromPathCache = <String, Uri> {};
   final PackageUriResolver _packageUriResolver;
 
   /// Creates and returns a URI resolver from [packageRoots].
   static PackageUriResolver _createResolver([Iterable<String> packageRoots]) {
     final packageRootResolvers = packageRoots.map((packageRoot) {
-      return new JavaFile.fromUri(new Uri.file(packageRoot));
+      return new JavaFile(packageRoot);
     }).toList(growable: false);
     return new PackageUriResolver(packageRootResolvers);
   }
@@ -33,6 +33,19 @@ class SourceResolver {
       concatPackageRoots.addAll(_defaultPackageRoots);
     }
     return new SourceResolver._(_createResolver(concatPackageRoots));
+  }
+
+  /// Due to how pub run sets the package root, use this constructor to create
+  /// a resolver that strictly deals with the default package root and applies
+  /// light massaging in order to avoid environment errors.
+  factory SourceResolver.forTesting() {
+    // TODO: Find why this happens and remove this.
+    var customPackageRoot = Platform.packageRoot.toString();
+    customPackageRoot = customPackageRoot.replaceFirst('file://', '');
+    final resolver = new SourceResolver.fromPackageRoots([
+      customPackageRoot,
+    ], includeDefaultPackageRoot: false);
+    return resolver;
   }
 
   SourceResolver._(this._packageUriResolver);
@@ -79,7 +92,18 @@ class SourceResolver {
   /// Example:
   ///     resolve('a/b/c.dart') // ==> package:a/b/c.dart
   Uri resolve(String path) {
-    final source = new FileBasedSource.con1(new JavaFile(path));
-    return _packageUriResolver.restoreAbsolute(source);
+    var uri = _uriFromPathCache[path];
+    if (uri == null) {
+      final source = new FileBasedSource.con1(new JavaFile(path));
+      uri = _packageUriResolver.restoreAbsolute(source);
+      // TODO: Remove hack.
+      if (uri.path.startsWith('packages')) {
+        uri = new Uri(
+            scheme: uri.scheme,
+            path: uri.path.replaceFirst('packages/', ''));
+      }
+      _uriFromPathCache[path] = uri;
+    }
+    return uri;
   }
 }

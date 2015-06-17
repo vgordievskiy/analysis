@@ -39,3 +39,13 @@ class FunctionParameter {
   /// Type name.
   String get typeName => _dartType.element.name;
 }
+
+/// Returns the type of [astNode].
+DartType getDartType(CompilationUnitMember astNode) {
+  if (astNode is ClassDeclaration) {
+    ClassElement el = astNode.element;
+    return el.type;
+  } else {
+    return null;
+  }
+}

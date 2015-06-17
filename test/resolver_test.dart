@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('SourceResolver', () {
-    final sourceResolver = new SourceResolver();
+    final sourceResolver = new SourceResolver.forTesting();
     final uri = Uri.parse('package:analysis/src/resolver.dart');
 
     test('can find the path to resolver.dart', () async {
@@ -25,6 +25,6 @@ void main() {
           'src',
           'resolver.dart'));
       expect(sourceResolver.resolve(absolutePath), uri);
-    }, skip: 'Disable until figure out why does not work with pub run test');
+    });
   });
 }

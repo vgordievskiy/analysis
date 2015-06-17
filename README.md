@@ -68,3 +68,25 @@ file, and returns an iterable of every library parsed.
 // ]
 sourceCrawler.crawl('package:foo/foo.dart')
 ```
+
+Anthology
+---
+
+**Experimental** API for application-wide analysis. Instead of using both
+`SourceVisitor` and/or `SourceCrawler` directly, `Anthology` helps build a
+collection of analyzed libraries.
+
+```dart
+// Create a new Anthology.
+new Anthology(resolver: ...)
+```
+
+It exposes both the `SourceVisitor` and `SourceCrawler` APIs, but also caches
+results whenever possible to make visiting and crawling the same packages
+cheaper.
+
+It's also possible to trace a type back to it's library:
+
+```dart
+anthology.getLibraryOfType(classAst.element.type)
+```

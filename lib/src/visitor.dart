@@ -8,6 +8,7 @@ import 'package:analyzer/src/generated/java_io.dart';
 import 'package:analyzer/src/generated/sdk_io.dart' show DirectoryBasedDartSdk;
 import 'package:analyzer/src/generated/source_io.dart';
 import 'package:path/path.dart' as path;
+import 'package:quiver/core.dart';
 
 /// A source visitor, that helps statically analyze and visit Dart source files.
 class SourceVisitor {
@@ -143,6 +144,27 @@ class Library {
       }
       return _resolvedAstUnits;
     }
+  }
+
+  @override
+  bool operator==(o) {
+    if (o is! Library) return false;
+    return o.name == name && o.path == path;
+  }
+
+  @override
+  int get hashCode => hash2(name, path);
+
+  /// Gets the declaration named [name].
+  Declaration getDeclaration(String name) {
+    return _astUnit.declarations.firstWhere(
+        (d) => d.element.displayName == name);
+  }
+
+  /// Returns the URI of this library.
+  Uri get uri {
+    // TODO: Cache.
+    return _sourceVisitor._sourceResolver.resolve(path);
   }
 
   @override
